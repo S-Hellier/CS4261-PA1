@@ -1,4 +1,22 @@
-# CS4261-PA1
+# CS4261-PA1: Band Setlist Creator
+
 Programming Assignment 1 for CS4261 Mobile Apps and Services
 
-Scott Hellier & Josh Robinson
+**Team:** Scott Hellier & Josh Robinson
+
+## Project Overview
+
+An AI-powered mobile app that helps bands create optimal setlists for different events. Users can manage their song library and generate custom setlists based on event type, duration, and mood.
+
+## Features
+
+- Manage Songs
+- Create AI-optimized setlists
+- User Authentication
+
+## Tech Stack
+
+- **Frontend**: React Native + Expo
+- **Backend**: Firebase (Authentication + Firestore)
+- **AI Service**: OpenAI API
+- **Platform**: iOS
