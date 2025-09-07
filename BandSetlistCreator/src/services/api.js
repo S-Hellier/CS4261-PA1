@@ -1,6 +1,6 @@
 import { auth } from '../../firebase';
 
-const API_BASE_URL = 'http://localhost:3000/api'; // Change this to your deployed URL later
+const API_BASE_URL = 'https://setlist-creator-production.up.railway.app/api';
 
 const getAuthToken = async () => {
   const user = auth.currentUser;
