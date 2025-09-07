@@ -109,10 +109,10 @@ app.post('/api/setlists/generate', verifyToken, async (req, res) => {
     
     // Get user's songs
     const songsRef = db.collection('songs');
-    const snapshot = await songsRef.where('userId', '==', req.user.uid).get();
+    const userSongs = await songsRef.where('userId', '==', req.user.uid).get();
     
     const availableSongs = [];
-    snapshot.forEach(doc => {
+    userSongs.forEach(doc => {
       availableSongs.push({ id: doc.id, ...doc.data() });
     });
     

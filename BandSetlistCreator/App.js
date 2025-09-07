@@ -10,6 +10,7 @@ import HomeScreen from './src/screens/HomeScreen';
 import AddSongScreen from './src/screens/AddSongScreen';
 import CreateSetlistScreen from './src/screens/CreateSetlistScreen';
 import SetlistScreen from './src/screens/SetlistScreen';
+import MySetlistsScreen from './src/screens/MySetlistsScreen';
 
 const Stack = createStackNavigator();
 
@@ -42,6 +43,11 @@ export default function App() {
             name="Setlist" 
             component={SetlistScreen} 
             options={{ title: 'Generated Setlist' }}
+          />
+          <Stack.Screen 
+            name="MySetlists" 
+            component={MySetlistsScreen} 
+            options={{ title: 'My Setlists' }}
           />
         </Stack.Navigator>
         <StatusBar style="auto" />

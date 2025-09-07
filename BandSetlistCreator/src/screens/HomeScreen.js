@@ -90,6 +90,15 @@ export default function HomeScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
+      <View style={styles.secondaryActions}>
+        <TouchableOpacity 
+          style={styles.setlistsButton}
+          onPress={() => navigation.navigate('MySetlists')}
+        >
+          <Text style={styles.setlistsButtonText}>My Setlists</Text>
+        </TouchableOpacity>
+      </View>
+
       <Text style={styles.sectionTitle}>My Songs ({songs.length})</Text>
       
       {songs.length === 0 ? (
@@ -140,6 +149,10 @@ const styles = StyleSheet.create({
     padding: 20,
     gap: 10,
   },
+  secondaryActions: {
+    paddingHorizontal: 20,
+    paddingBottom: 10,
+  },
   addButton: {
     flex: 1,
     backgroundColor: '#007AFF',
@@ -166,6 +179,17 @@ const styles = StyleSheet.create({
   },
   disabledText: {
     opacity: 0.5,
+  },
+  setlistsButton: {
+    backgroundColor: '#FF9500',
+    padding: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  setlistsButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
   sectionTitle: {
     fontSize: 18,
