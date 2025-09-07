@@ -11,12 +11,30 @@ app.use(cors());
 app.use(express.json());
 
 // Initialize Firebase Admin with service account
-const serviceAccount = require(process.env.SERVICE_ACCOUNT_PATH);
+let serviceAccount;
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  projectId: process.env.FIREBASE_PROJECT_ID
-});
+if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+  // For Railway deployment - use environment variable
+  serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+} else {
+  // For local development - use file
+  try {
+    serviceAccount = require('./serviceAccountKey.json');
+  } catch (error) {
+    console.log('Service account key not found');
+    serviceAccount = null;
+  }
+}
+
+if (serviceAccount) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    projectId: process.env.FIREBASE_PROJECT_ID || 'setlist-creator-3d94e'
+  });
+} else {
+  console.error('Firebase service account not configured');
+  process.exit(1);
+}
 
 const db = admin.firestore();
 
