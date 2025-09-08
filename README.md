@@ -11,7 +11,7 @@ An AI-powered mobile app that helps bands create optimal setlists for different 
 ## Features
 
 - Manage Songs
-- Create AI-optimized setlists
+- Creat setlists
 - User Authentication
 
 ## Tech Stack
