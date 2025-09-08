@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const admin = require('firebase-admin');
+const { OpenAI } = require('openai');
 require('dotenv').config();
 
 const app = express();
@@ -37,6 +38,63 @@ if (serviceAccount) {
 }
 
 const db = admin.firestore();
+
+// Initialize OpenAI
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
+
+// ChatGPT Setlist Generation Function
+const generateSetlistWithChatGPT = async (availableSongs, targetMinutes, eventType, notes) => {
+  try {
+    // Format songs for the prompt
+    const songList = availableSongs.map((song, index) => 
+      `${index + 1}. "${song.title}" by ${song.artist} [${song.genre}] - ${song.duration}`
+    ).join('\n');
+
+    const prompt = `You are a professional setlist curator. Create a setlist for a ${eventType || 'general'} event that should last approximately ${targetMinutes} minutes.
+
+User notes/preferences: ${notes || 'No specific preferences provided'}
+
+Available songs:
+${songList}
+
+Please select songs that:
+1. Flow well together musically
+2. Match the event type and user preferences
+3. Stay within the ${targetMinutes}-minute duration limit
+4. Create good energy progression
+
+Respond with ONLY a JSON array of song numbers in the order they should be played. For example: [1, 5, 3, 8, 2]
+Do not include any other text in your response.`;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      max_tokens: 150,
+      temperature: 0.7
+    });
+
+    const content = response.choices[0].message.content.trim();
+    const selectedIndices = JSON.parse(content);
+    
+    // Convert indices to actual songs (adjust for 0-based indexing)
+    const selectedSongs = selectedIndices.map((index, order) => ({
+      ...availableSongs[index - 1],
+      order: order + 1
+    }));
+
+    return selectedSongs;
+  } catch (error) {
+    console.error('ChatGPT generation failed:', error);
+    throw error;
+  }
+};
 
 const verifyToken = async (req, res, next) => {
   try {
@@ -138,22 +196,30 @@ app.post('/api/setlists/generate', verifyToken, async (req, res) => {
       return res.status(400).json({ error: 'No songs available' });
     }
     
-    // Simple setlist generation algorithm
+    // ChatGPT-powered setlist generation with fallback
     const targetMinutes = parseInt(duration);
-    const selectedSongs = [];
-    let totalMinutes = 0;
-
-    //take in this parameter *******.
-    const shuffledSongs = [...availableSongs].sort(() => Math.random() - 0.5);
+    let selectedSongs = [];
     
-    for (const song of shuffledSongs) {
-      const songMinutes = parseFloat(song.duration.split(':')[0]) + parseFloat(song.duration.split(':')[1]) / 60;
-      if (totalMinutes + songMinutes <= targetMinutes) {
-        selectedSongs.push({
-          ...song,
-          order: selectedSongs.length + 1
-        });
-        totalMinutes += songMinutes;
+    try {
+      // Try ChatGPT generation first
+      console.log('Generating setlist with ChatGPT...');
+      selectedSongs = await generateSetlistWithChatGPT(availableSongs, targetMinutes, eventType, notes);
+      console.log(`ChatGPT generated setlist with ${selectedSongs.length} songs`);
+    } catch (error) {
+      // Fallback to original random algorithm
+      console.log('ChatGPT failed, falling back to random algorithm:', error.message);
+      let totalMinutes = 0;
+      const shuffledSongs = [...availableSongs].sort(() => Math.random() - 0.5);
+      
+      for (const song of shuffledSongs) {
+        const songMinutes = parseFloat(song.duration.split(':')[0]) + parseFloat(song.duration.split(':')[1]) / 60;
+        if (totalMinutes + songMinutes <= targetMinutes) {
+          selectedSongs.push({
+            ...song,
+            order: selectedSongs.length + 1
+          });
+          totalMinutes += songMinutes;
+        }
       }
     }
     
