@@ -142,7 +142,8 @@ app.post('/api/setlists/generate', verifyToken, async (req, res) => {
     const targetMinutes = parseInt(duration);
     const selectedSongs = [];
     let totalMinutes = 0;
-    
+
+    //take in this parameter *******.
     const shuffledSongs = [...availableSongs].sort(() => Math.random() - 0.5);
     
     for (const song of shuffledSongs) {
