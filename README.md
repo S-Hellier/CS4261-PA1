@@ -17,6 +17,5 @@ An AI-powered mobile app that helps bands create optimal setlists for different 
 ## Tech Stack
 
 - **Frontend**: React Native + Expo
-- **Backend**: Firebase (Authentication + Firestore)
-- **AI Service**: OpenAI API
-- **Platform**: iOS
+- **Backend**: Node with Express, deployed on Railway
+- **Database**: Firebase
