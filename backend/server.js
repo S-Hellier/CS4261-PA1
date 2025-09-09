@@ -264,6 +264,34 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Band Setlist API is running' });
 });
 
+// Temporary OpenAI test endpoint (remove after testing)
+app.get('/api/test-openai', async (req, res) => {
+  try {
+    const testSongs = [
+      { title: 'Hotel California', artist: 'Eagles', genre: 'Rock', duration: '6:30' },
+      { title: 'Sweet Caroline', artist: 'Neil Diamond', genre: 'Pop', duration: '3:21' },
+      { title: 'Don\'t Stop Believin\'', artist: 'Journey', genre: 'Rock', duration: '4:10' }
+    ];
+    
+    console.log('Testing ChatGPT integration...');
+    const result = await generateSetlistWithChatGPT(testSongs, 10, 'party', 'High energy songs please');
+    console.log('ChatGPT test successful:', result);
+    
+    res.json({
+      status: 'SUCCESS',
+      message: 'ChatGPT integration working',
+      testResult: result
+    });
+  } catch (error) {
+    console.error('ChatGPT test failed:', error);
+    res.json({
+      status: 'ERROR',
+      message: 'ChatGPT integration failed',
+      error: error.message
+    });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`API endpoints available at http://localhost:${PORT}/api`);
