@@ -47,10 +47,15 @@ const openai = new OpenAI({
 // ChatGPT Setlist Generation Function
 const generateSetlistWithChatGPT = async (availableSongs, targetMinutes, eventType, notes) => {
   try {
+    console.log('--- Inside generateSetlistWithChatGPT function ---');
+    console.log('OpenAI client exists:', !!openai);
+    
     // Format songs for the prompt
     const songList = availableSongs.map((song, index) => 
       `${index + 1}. "${song.title}" by ${song.artist} [${song.genre}] - ${song.duration}`
     ).join('\n');
+    
+    console.log('Formatted song list for ChatGPT:', songList);
 
     const prompt = `You are a professional setlist curator. Create a setlist for a ${eventType || 'general'} event that should last approximately ${targetMinutes} minutes.
 
@@ -68,6 +73,8 @@ Please select songs that:
 Respond with ONLY a JSON array of song numbers in the order they should be played. For example: [1, 5, 3, 8, 2]
 Do not include any other text in your response.`;
 
+    console.log('Sending prompt to OpenAI:', prompt.substring(0, 200) + '...');
+    
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [
@@ -79,6 +86,8 @@ Do not include any other text in your response.`;
       max_tokens: 150,
       temperature: 0.7
     });
+    
+    console.log('OpenAI API response received');
 
     const content = response.choices[0].message.content.trim();
     const selectedIndices = JSON.parse(content);
@@ -202,12 +211,23 @@ app.post('/api/setlists/generate', verifyToken, async (req, res) => {
     
     try {
       // Try ChatGPT generation first
-      console.log('Generating setlist with ChatGPT...');
+      console.log('=== ATTEMPTING CHATGPT GENERATION ===');
+      console.log('Available songs count:', availableSongs.length);
+      console.log('Target minutes:', targetMinutes);
+      console.log('Event type:', eventType);
+      console.log('User notes:', notes);
+      console.log('OpenAI API Key configured:', !!process.env.OPENAI_API_KEY);
+      
       selectedSongs = await generateSetlistWithChatGPT(availableSongs, targetMinutes, eventType, notes);
-      console.log(`ChatGPT generated setlist with ${selectedSongs.length} songs`);
+      console.log('=== CHATGPT SUCCESS ===');
+      console.log(`ChatGPT generated setlist with ${selectedSongs.length} songs:`);
+      selectedSongs.forEach((song, i) => console.log(`${i+1}. ${song.title} by ${song.artist}`));
     } catch (error) {
       // Fallback to original random algorithm
-      console.log('ChatGPT failed, falling back to random algorithm:', error.message);
+      console.log('=== CHATGPT FAILED - USING FALLBACK ===');
+      console.log('Error type:', error.constructor.name);
+      console.log('Error message:', error.message);
+      console.log('Full error:', error);
       let totalMinutes = 0;
       const shuffledSongs = [...availableSongs].sort(() => Math.random() - 0.5);
       
@@ -264,33 +284,6 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Band Setlist API is running' });
 });
 
-// Temporary OpenAI test endpoint (remove after testing)
-app.get('/api/test-openai', async (req, res) => {
-  try {
-    const testSongs = [
-      { title: 'Hotel California', artist: 'Eagles', genre: 'Rock', duration: '6:30' },
-      { title: 'Sweet Caroline', artist: 'Neil Diamond', genre: 'Pop', duration: '3:21' },
-      { title: 'Don\'t Stop Believin\'', artist: 'Journey', genre: 'Rock', duration: '4:10' }
-    ];
-    
-    console.log('Testing ChatGPT integration...');
-    const result = await generateSetlistWithChatGPT(testSongs, 10, 'party', 'High energy songs please');
-    console.log('ChatGPT test successful:', result);
-    
-    res.json({
-      status: 'SUCCESS',
-      message: 'ChatGPT integration working',
-      testResult: result
-    });
-  } catch (error) {
-    console.error('ChatGPT test failed:', error);
-    res.json({
-      status: 'ERROR',
-      message: 'ChatGPT integration failed',
-      error: error.message
-    });
-  }
-});
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
